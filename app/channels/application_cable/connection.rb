@@ -8,9 +8,15 @@ module ApplicationCable
     end
 
     def disconnect
-      self.watched_links.each do |link|
-        link.live_client_started_at = nil
-        link.save
+      self.watched_links.each do |link_id, connection_id|
+        next unless LinkPresence.leave_id(link_id, connection_id)
+
+        link = Link.find_by(id: link_id)
+        next unless link
+
+        link.broadcast_link_page_updates
+        ActionCable.server.broadcast("Link::#{link.id}", link.reload.api_payload)
+        User.broadcast_api_update(link.user)
       end
       
       self.watched_links = []

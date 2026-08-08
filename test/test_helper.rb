@@ -10,4 +10,7 @@ class ActiveSupport::TestCase
   fixtures :all
 
   # Add more helper methods to be used by all tests here...
+  setup do
+    LinkPresence.reset! if defined?(LinkPresence)
+  end
 end
