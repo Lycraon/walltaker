@@ -42,24 +42,24 @@ services:
       - frontend
 
   pornbot_scheduler:
-  build: .
-  command: bash -lc 'ruby -rsocket -e "loop { begin; TCPSocket.new(\"database\", ${DB_PORT}).close; break; rescue; sleep 1; end }" && while true; do bundle exec rake walltaker:porn_bot_round; sleep "$${PORNBOT_INTERVAL_SECONDS:-600}"; done'
-  volumes:
-    - ./:/ror
-  depends_on:
-    - database
-    - redis
-  environment:
-    - POSTGRES_USER=${DB_USER}
-    - DATABASE_URL=${DB_URL}
-    - SECRET_KEY_BASE=${SECRET_KEY_BASE}
-    - REDIS_URL=redis://redis:${CACHE_PORT}/1
-    - RAILS_ENV=production
-    - PORNBOT_INTERVAL_SECONDS=600
-    - WALLTAKER_BASE_URL=${WALLTAKER_URL}
-    - WALLTAKER_HOST=${WALLTAKER_HOST}
-  networks:
-   - backend
+    build: .
+    command: bash -lc 'ruby -rsocket -e "loop { begin; TCPSocket.new(\"database\", ${DB_PORT}).close; break; rescue; sleep 1; end }" && while true; do bundle exec rake walltaker:porn_bot_round; sleep "$${PORNBOT_INTERVAL_SECONDS:-600}"; done'
+    volumes:
+      - ./:/ror
+    depends_on:
+      - database
+      - cache
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - DATABASE_URL=${DB_URL}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - REDIS_URL=redis://redis:${CACHE_PORT}/1
+      - RAILS_ENV=production
+      - PORNBOT_INTERVAL_SECONDS=600
+      - WALLTAKER_BASE_URL=${WALLTAKER_URL}
+      - WALLTAKER_HOST=${WALLTAKER_HOST}
+    networks:
+    - backend
 
 volumes:
   postgres-data:
