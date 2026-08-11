@@ -49,7 +49,8 @@ Rails.application.configure do
     /https:\/\/walltaker.joi.how/, 
     /http:\/\/walltaker.joi.how/, 
     "localhost", 
-    'walltaker-7e4cf22c7c3d.herokuapp.com' 
+    /https:\/\/walltaker.lycraon.online/, 
+    /http:\/\/walltaker.lycraon.online/
   ]
   config.action_cable.disable_request_forgery_protection = true
   config.hosts << "localhost"
