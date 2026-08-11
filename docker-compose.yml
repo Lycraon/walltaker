@@ -20,6 +20,7 @@ services:
 
   web:
     build: .
+    command: bash -lc 'ruby -rsocket -e "loop { begin; TCPSocket.new(\"database\", ${DB_PORT}).close; break; rescue; sleep 1; end }" && bundle exec rails assets:precompile && bundle exec rails db:prepare && bundle exec rails server -e production -b 0.0.0.0'
     volumes:
       - ./:/ror
     ports:
