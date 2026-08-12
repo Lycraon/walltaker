@@ -5,7 +5,7 @@ set -euo pipefail
 
 BRANCH="${1:-main}"
 REPO="https://raw.githubusercontent.com/Lycraon/walltaker/refs/heads/$BRANCH"
-INSTALL_DIR="${2:-/opt/walltaker"}
+INSTALL_DIR="${2:-/opt/walltaker}"
 
 mkdir -p "$INSTALL_DIR/scripts"
 
