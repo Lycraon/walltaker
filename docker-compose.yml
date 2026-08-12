@@ -13,7 +13,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 10
     networks:
@@ -25,7 +25,6 @@ services:
       - infra
     ports:
       - ${CACHE_HOAST_PORT}:${CACHE_PORT}
-    command: bash -lc 'ruby -rsocket -e "loop { begin; TCPSocket.new(\"database\", ${DB_PORT}).close; break; rescue; sleep 1; end }" && bundle exec rails assets:precompile && bundle exec rails db:prepare && bundle exec rails server -e production -b 0.0.0.0'
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 1m30s

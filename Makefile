@@ -35,13 +35,13 @@ run:
 	$(ENV_COMPOSE_APP) $(PROJECT) up -d
 
 stop:
-	$(COMPOSE_APP) --profile app $(PROJECT) down
+	$(COMPOSE_APP) $(PROJECT) down
 
 remove:
-	$(COMPOSE_APP) --profile app rm
+	$(COMPOSE_APP) rm
 
 restart:
-	$(COMPOSE_APP) --profile app restart
+	$(COMPOSE_APP) restart
 
 rebuild:
 	-make stop || true
