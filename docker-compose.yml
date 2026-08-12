@@ -45,7 +45,7 @@ services:
     ports:
       - "${RAILS_HOAST_PORT}:3000"
     depends_on:
-      - database
+      - postgres
       - cache
     environment:
       - ENV=PROD
@@ -69,7 +69,7 @@ services:
     volumes:
       - ./:/ror
     depends_on:
-      - database
+      - postgres
       - cache
     environment:
       - POSTGRES_USER=${DB_USER}

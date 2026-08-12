@@ -7,7 +7,7 @@ ENV_COMPOSE_APP = docker compose --env-file .env.example --env-file walltaker.en
 PROJECT = -p walltaker
 
 config:
-	$(ENV_COMPOSE) -f $(REPO) config -o docker-compose.yaml
+	$(ENV_COMPOSE) -f $(REPO) --profile infra --profile app config -o docker-compose.yaml
 
 infra-build:
 	make config
