@@ -1,0 +1,68 @@
+REPO = https://github.com/Lycraon/walltaker.git\#Test
+ENV_COMPOSE = docker compose --env-file walltaker.env
+COMPOSE_INFR = docker compose --profile infra
+ENV_COMPOSE_INFR = docker compose --env-file walltaker.env --profile infra
+COMPOSE_APP = docker compose --profile app
+ENV_COMPOSE_APP = docker compose --env-file walltaker.env --profile app
+PROJECT = -p walltaker
+
+config:
+	$(ENV_COMPOSE) -f $(REPO) config -o docker-compose.yaml
+
+infra-build:
+	make config
+	docker compose pull 
+	$(ENV_COMPOSE_INFR) $(PROJECT) build
+
+infra-run:
+	$(ENV_COMPOSE_INFR) $(PROJECT) up -d
+infra-stop:
+	$(COMPOSE_INFR) $(PROJECT) down
+infra-remove:
+	$(COMPOSE_INFR) $(PROJECT) rm
+infra-restart:
+	$(COMPOSE_INFR) restart
+
+build:
+	#create docker compose file
+	make config
+	#get images (non builds)
+	docker compose pull 
+	#build images
+	$(ENV_COMPOSE_APP) $(PROJECT) build
+
+run:
+	$(ENV_COMPOSE_APP) $(PROJECT) up -d
+
+stop:
+	$(COMPOSE_APP) --profile app $(PROJECT) down
+
+remove:
+	$(COMPOSE_APP) --profile app rm
+
+restart:
+	$(COMPOSE_APP) --profile app restart
+
+rebuild:
+	-make stop || true
+	-make remove|| true
+	make build
+
+deploy:
+	make rebuild
+	make run
+
+ls:
+	docker compose ls
+	docker image ls
+	docker ps -a
+
+logs:
+	$(ENV_COMPOSE_INFR) logs
+	$(ENV_COMPOSE_APP) logs
+
+
+test:
+	docker inspect --format='{{.State.Health.Status}}' postgres
+	docker inspect --format='{{.State.Health.Status}}' redis
+	#timeout 90s bash -c 'until docker inspect --format="{{.State.Health.Status}}" postgres | grep "healthy"; do sleep 1; done'
