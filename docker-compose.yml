@@ -3,6 +3,7 @@ services:
     image: postgres:14
     profiles:
       - infra
+    restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
@@ -23,6 +24,13 @@ services:
     image: redis:7-alpine
     profiles:
       - infra
+    restart: unless-stopped
+    environment:
+      - RI_LOG_LEVEL=info
+      #- REDIS_ARGS=--requirepass your_password_here --appendonly yes
+      #- REDIS_ARGS=save 60 1000 --requirepass your_password_here --appendonly yes
+    volumes:
+      - redis-data:/data
     ports:
       - ${CACHE_HOAST_PORT}:${CACHE_PORT}
     healthcheck:
@@ -38,6 +46,7 @@ services:
     build: .
     profiles:
       - app
+    restart: unless-stopped
     command: bash -lc 'ruby -rsocket -e "loop { begin; TCPSocket.new(\"postgres\", ${DB_PORT}).close; break; rescue; sleep 1; end }" && bundle exec rails assets:precompile && bundle exec rails db:prepare && bundle exec rails server -e production -b 0.0.0.0'
     volumes:
       - ./:/ror
@@ -61,7 +70,8 @@ services:
     build: .
     profiles:
       - app
-    command: bash -lc 'ruby -rsocket -e "loop { begin; TCPSocket.new(\"database\", ${DB_PORT}).close; break; rescue; sleep 1; end }" && while true; do bundle exec rake walltaker:porn_bot_round; sleep "$${PORNBOT_INTERVAL_SECONDS:-600}"; done'
+    restart: unless-stopped
+    command: bash -lc 'ruby -rsocket -e "loop { begin; TCPSocket.new(\"postgres\", ${DB_PORT}).close; break; rescue; sleep 1; end }" && while true; do bundle exec rake walltaker:porn_bot_round; sleep "$${PORNBOT_INTERVAL_SECONDS:-600}"; done'
     volumes:
       - ./:/ror
     environment:
@@ -78,6 +88,7 @@ services:
 
 volumes:
   postgres-data:
+  redis-data:
 
 networks:
   backend:

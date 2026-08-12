@@ -17,7 +17,7 @@ infra-build:
 infra-run:
 	$(ENV_COMPOSE_INFR) $(PROJECT) up -d
 infra-stop:
-	$(COMPOSE_INFR) $(PROJECT) down
+	$(COMPOSE_INFR) $(PROJECT) stop
 infra-remove:
 	$(COMPOSE_INFR) $(PROJECT) rm
 infra-restart:
@@ -35,7 +35,7 @@ run:
 	$(ENV_COMPOSE_APP) $(PROJECT) up -d
 
 stop:
-	$(COMPOSE_APP) $(PROJECT) down
+	$(COMPOSE_APP) $(PROJECT) stop
 
 remove:
 	$(COMPOSE_APP) rm
