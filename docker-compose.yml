@@ -1,5 +1,5 @@
 services:
-  postgres:
+  database:
     image: postgres:14
     profiles:
       - infra
@@ -47,7 +47,7 @@ services:
     profiles:
       - app
     restart: unless-stopped
-    command: bash -lc 'ruby -rsocket -e "loop { begin; TCPSocket.new(\"postgres\", ${DB_PORT}).close; break; rescue; sleep 1; end }" && bundle exec rails assets:precompile && bundle exec rails db:prepare && bundle exec rails server -e production -b 0.0.0.0'
+    command: bash -lc 'ruby -rsocket -e "loop { begin; TCPSocket.new(\"database\", ${DB_PORT}).close; break; rescue; sleep 1; end }" && bundle exec rails assets:precompile && bundle exec rails db:prepare && bundle exec rails server -e production -b 0.0.0.0'
     volumes:
       - ./:/ror
     ports:
@@ -71,7 +71,7 @@ services:
     profiles:
       - app
     restart: unless-stopped
-    command: bash -lc 'ruby -rsocket -e "loop { begin; TCPSocket.new(\"postgres\", ${DB_PORT}).close; break; rescue; sleep 1; end }" && while true; do bundle exec rake walltaker:porn_bot_round; sleep "$${PORNBOT_INTERVAL_SECONDS:-600}"; done'
+    command: bash -lc 'ruby -rsocket -e "loop { begin; TCPSocket.new(\"database\", ${DB_PORT}).close; break; rescue; sleep 1; end }" && while true; do bundle exec rake walltaker:porn_bot_round; sleep "$${PORNBOT_INTERVAL_SECONDS:-600}"; done'
     volumes:
       - ./:/ror
     environment:
