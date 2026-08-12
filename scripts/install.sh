@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-#curl -fsSL https://raw.githubusercontent.com/lycraon/walltaker/main/install.sh | bash
+#curl -fsSL https://raw.githubusercontent.com/Lycraon/walltaker/refs/heads/Main/scripts/install.sh | bash
 
 set -euo pipefail
 
-REPO="https://raw.githubusercontent.com/lycraon/walltaker/main"
-INSTALL_DIR="/opt/walltaker"
+BRANCH="${1:-main}"
+REPO="https://raw.githubusercontent.com/Lycraon/walltaker/refs/heads/$BRANCH"
+INSTALL_DIR="${2:-/opt/walltaker"}
 
 mkdir -p "$INSTALL_DIR/scripts"
 
