@@ -46,7 +46,7 @@ services:
       - "${RAILS_HOAST_PORT}:3000"
     depends_on:
       - postgres
-      - cache
+      - redis
     environment:
       - ENV=PROD
       - POSTGRES_USER=${DB_USER}
@@ -70,7 +70,7 @@ services:
       - ./:/ror
     depends_on:
       - postgres
-      - cache
+      - redis
     environment:
       - POSTGRES_USER=${DB_USER}
       - DATABASE_URL=${DB_URL}
