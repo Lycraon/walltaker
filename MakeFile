@@ -1,9 +1,9 @@
 REPO = https://github.com/Lycraon/walltaker.git\#Test
-ENV_COMPOSE = docker compose --env-file walltaker.env
+ENV_COMPOSE = docker compose --env-file .env.example --env-file walltaker.env
 COMPOSE_INFR = docker compose --profile infra
-ENV_COMPOSE_INFR = docker compose --env-file walltaker.env --profile infra
+ENV_COMPOSE_INFR = docker compose --env-file .env.example --env-file walltaker.env --profile infra
 COMPOSE_APP = docker compose --profile app
-ENV_COMPOSE_APP = docker compose --env-file walltaker.env --profile app
+ENV_COMPOSE_APP = docker compose --env-file .env.example --env-file walltaker.env --profile app
 PROJECT = -p walltaker
 
 config:
