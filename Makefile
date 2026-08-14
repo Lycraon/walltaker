@@ -1,47 +1,41 @@
-REPO = https://github.com/Lycraon/walltaker.git\#Test
-ENV_COMPOSE = docker compose --env-file .env.example --env-file walltaker.env
-COMPOSE_INFR = docker compose --profile infra
-ENV_COMPOSE_INFR = docker compose --env-file .env.example --env-file walltaker.env --profile infra
-COMPOSE_APP = docker compose --profile app
-ENV_COMPOSE_APP = docker compose --env-file .env.example --env-file walltaker.env --profile app
-PROJECT = -p walltaker
+
+BRANCH = Test
+REPO = https://github.com/Lycraon/walltaker.git
+REPO_URL ?= $(REPO)\#$(BRANCH)
+
+#App ----------------------------------------------------------------------------------
+PROFILE_APP = 
+FILE_APP = -f docker-compose-app.yaml
+COMPOSE_APP = docker compose $(PROFILE_APP) $(FILE_APP)
+
+
+#Base    ----------------------------------------------------------------------------------
+PROJECT ?= -p walltaker
+
+ENV_FILES ?= --env-file .env.example --env-file walltaker.env
+PROFILES ?= --profile app
+CONFIG_FILE ?= docker-compose-app.yaml
+COMPOSE_OPTIONS ?= $(ENV_FILES) $(PROJECT) -f $(CONFIG_FILE) $(PROFILES) $(COMPOSE_ARGS)
 
 config:
-	$(ENV_COMPOSE) -f $(REPO) --profile infra --profile app config -o docker-compose.yaml
-
-infra-build:
-	make config
-	docker compose pull 
-	$(ENV_COMPOSE_INFR) $(PROJECT) build
-
-infra-run:
-	$(ENV_COMPOSE_INFR) $(PROJECT) up -d
-infra-stop:
-	$(COMPOSE_INFR) $(PROJECT) stop
-infra-remove:
-	$(COMPOSE_INFR) $(PROJECT) rm
-infra-restart:
-	$(COMPOSE_INFR) restart
+	docker compose $(ENV_FILES) -f $(REPO_URL) $(PROFILES) $(COMPOSE_ARGS) config -o $(CONFIG_FILE)
 
 build:
-	#create docker compose file
 	make config
-	#get images (non builds)
-	docker compose pull 
-	#build images
-	$(ENV_COMPOSE_APP) $(PROJECT) build
+	docker compose $(COMPOSE_OPTIONS) pull --ignore-buildable
+	docker compose $(COMPOSE_OPTIONS) build $(ARGS)
 
 run:
-	$(ENV_COMPOSE_APP) $(PROJECT) up -d
+	docker compose $(COMPOSE_OPTIONS) up --d $(ARGS)
 
 stop:
-	$(COMPOSE_APP) $(PROJECT) stop
+	docker compose $(COMPOSE_OPTIONS) stop $(ARGS)
 
 remove:
-	$(COMPOSE_APP) rm
+	docker compose $(COMPOSE_OPTIONS) rm $(ARGS)
 
 restart:
-	$(COMPOSE_APP) restart
+	docker compose $(COMPOSE_OPTIONS) restart $(ARGS)
 
 rebuild:
 	-make stop || true
@@ -58,11 +52,27 @@ ls:
 	docker ps -a
 
 logs:
-	$(ENV_COMPOSE_INFR) logs
-	$(ENV_COMPOSE_APP) logs
+	docker  $(PROJECT) $(CONFIG_FILE) $(PROFILES) compose logs
+
+#Infrastructure ----------------------------------------------------------------------------------
+PROFILES_INFR = 
+CONFIG_FILE_INFR=docker-compose-infrastructure.yaml
+FILE_INFR = -f docker-compose-infrastructure.yaml
+COMPOSE_INFR = docker compose $(PROFILE_INFR) $(FILE_INFR)
+ENV_COMPOSE_INFR = $(ENV_COMPOSE) $(PROFILE_INFR) $(FILE_INFR)
 
 
-test:
-	docker inspect --format='{{.State.Health.Status}}' postgres
-	docker inspect --format='{{.State.Health.Status}}' redis
-	#timeout 90s bash -c 'until docker inspect --format="{{.State.Health.Status}}" postgres | grep "healthy"; do sleep 1; done'
+infra-config:
+	make config PROFILES="$(PROFILES_INFR)" CONFIG_FILE="$(CONFIG_FILE_INFR)"
+
+infra-build:
+	make build PROFILES="$(PROFILES_INFR)" CONFIG_FILE="$(CONFIG_FILE_INFR)"
+
+infra-run:
+	make run PROFILES="$(PROFILES_INFR)" CONFIG_FILE="$(CONFIG_FILE_INFR)"
+infra-stop:
+	make stop PROFILES="$(PROFILES_INFR)" CONFIG_FILE="$(CONFIG_FILE_INFR)"
+infra-remove:
+	make remove PROFILES="$(PROFILES_INFR)" CONFIG_FILE="$(CONFIG_FILE_INFR)"
+infra-restart:
+	make restart PROFILES="$(PROFILES_INFR)" CONFIG_FILE="$(CONFIG_FILE_INFR)"
