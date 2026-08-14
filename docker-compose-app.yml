@@ -6,7 +6,7 @@ x-redis-env: &redis
 
 x-walltaker-env: &walltaker  
     WALLTAKER_HOST: ${WALLTAKER_HOST?error}
-    WALLTAKER_URL: ${WALLTAKER_URL?error}
+    WALLTAKER_BASE_URL: ${WALLTAKER_URL?error}
     E621_USER_AGENT: ${WALLTAKER_HOST} (forked from ailurus and run by ${E621_USER?error})
 
 services:
@@ -37,6 +37,7 @@ services:
       <<: [*database, *redis, *walltaker]
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       PORNBOT_INTERVAL_SECONDS: 600
+      RAILS_ENV: production
     networks:
     - backend
 
