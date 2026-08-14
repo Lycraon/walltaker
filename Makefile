@@ -17,7 +17,7 @@ PROFILES ?= --profile app
 CONFIG_FILE ?= docker-compose-app.yml
 COMPOSE_OPTIONS ?= $(ENV_FILES) $(PROJECT) -f $(CONFIG_FILE) $(PROFILES) $(COMPOSE_ARGS)
 
-#installing the script that installs this file lmao
+#running script that installs this file lmao
 install:
 	./scripts/install.sh Test
 
