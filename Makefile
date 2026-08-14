@@ -18,7 +18,7 @@ CONFIG_FILE ?= docker-compose-app.yaml
 COMPOSE_OPTIONS ?= $(ENV_FILES) $(PROJECT) -f $(CONFIG_FILE) $(PROFILES) $(COMPOSE_ARGS)
 
 config:
-	docker compose $(ENV_FILES) -f $(REPO_URL) $(PROFILES) $(COMPOSE_ARGS) config -o $(CONFIG_FILE)
+	docker compose $(ENV_FILES) -f $(REPO_URL):$(CONFIG_FILE) $(PROFILES) $(COMPOSE_ARGS) config -o $(CONFIG_FILE)
 
 build:
 	make config
