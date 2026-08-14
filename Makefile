@@ -20,23 +20,25 @@ config:
 build:
 	make config
 	docker compose $(COMPOSE_OPTIONS) pull --ignore-buildable
-	docker compose $(COMPOSE_OPTIONS) build $(ARGS)
+	docker compose $(COMPOSE_OPTIONS) build $(BUILD_ARGS)
 
+#--d to run in detached mode -> console will not be blocked
 run:
-	docker compose $(COMPOSE_OPTIONS) up --d $(ARGS)
+	docker compose $(COMPOSE_OPTIONS) up --d $(RUN_ARGS)
 
 stop:
-	docker compose $(COMPOSE_OPTIONS) stop $(ARGS)
+	docker compose $(COMPOSE_OPTIONS) stop $(STOP_ARGS)
 
+# -f to skip confirmation, -s to stop containers before removal
 remove:
-	docker compose $(COMPOSE_OPTIONS) rm $(ARGS)
+	docker compose $(COMPOSE_OPTIONS) rm $(REMOVE_ARGS) 
 
 restart:
-	docker compose $(COMPOSE_OPTIONS) restart $(ARGS)
+	docker compose $(COMPOSE_OPTIONS) restart $(RESTART_ARGS)
 
 rebuild:
 	-make stop || true
-	-make remove|| true
+	-make remove REMOVE_ARGS="-s -f" || true
 	make build
 
 deploy:
