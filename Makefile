@@ -3,17 +3,10 @@ BRANCH = main
 REPO = https://github.com/Lycraon/walltaker.git
 REPO_URL ?= $(REPO)\#$(BRANCH)
 
-#App ----------------------------------------------------------------------------------
-PROFILE_APP =
-FILE_APP = -f docker-compose-app.yml
-COMPOSE_APP = docker compose $(PROFILE_APP) $(FILE_APP)
-
-
-#Base    ----------------------------------------------------------------------------------
 PROJECT ?= -p walltaker
 
 ENV_FILES ?= --env-file .env.example --env-file walltaker.env
-PROFILES ?= --profile app
+PROFILES ?=
 CONFIG_FILE ?= docker-compose-app.yml
 COMPOSE_OPTIONS ?= $(ENV_FILES) $(PROJECT) -f $(CONFIG_FILE) $(PROFILES) $(COMPOSE_ARGS)
 
