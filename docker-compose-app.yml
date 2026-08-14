@@ -6,7 +6,7 @@ services:
     volumes:
       - ./:/ror
     ports:
-      - "${RAILS_HOAST_PORT}:3000"
+      - "${RAILS_HOST_PORT}:3000"
     environment:
       - ENV=PROD
       - POSTGRES_USER=${DB_USER}
