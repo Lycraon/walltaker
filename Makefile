@@ -24,7 +24,7 @@ build:
 
 #--d to run in detached mode -> console will not be blocked
 run:
-	docker compose $(COMPOSE_OPTIONS) up --d $(RUN_ARGS)
+	docker compose $(COMPOSE_OPTIONS) up -d $(RUN_ARGS)
 
 stop:
 	docker compose $(COMPOSE_OPTIONS) stop $(STOP_ARGS)
