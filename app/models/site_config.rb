@@ -24,7 +24,7 @@ class SiteConfig
   end
 
   def self.e621_user_agent
-    ENV.fetch("E621_USER_AGENT", "#{host} (by ailurus on e621)")
+    ENV.fetch("E621_USER_AGENT")
   end
 
   def self.nut_tracker_enabled?

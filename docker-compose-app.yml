@@ -17,6 +17,7 @@ services:
       - RAILS_SERVE_STATIC_FILES=true
       - WALLTAKER_BASE_URL=${WALLTAKER_URL}
       - WALLTAKER_HOST=${WALLTAKER_HOST}
+      - E621_USER_AGENT=${E621_USER_AGENT}
     networks:
       - backend
       - frontend
@@ -36,6 +37,7 @@ services:
       - PORNBOT_INTERVAL_SECONDS=600
       - WALLTAKER_BASE_URL=${WALLTAKER_URL}
       - WALLTAKER_HOST=${WALLTAKER_HOST}
+      - E621_USER_AGENT=${E621_USER_AGENT}
     networks:
     - backend
 
