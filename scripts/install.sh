@@ -16,7 +16,7 @@ curl -fsSL "$REPO/Makefile" \
 curl -fsSL "$REPO/.env.example" \
     -o "$INSTALL_DIR/.env.example"
 
-touch walltaker.env
+touch "$INSTALL_DIR/walltaker.env"
 
 # Scripts
 curl -fsSL "$REPO/scripts/install.sh" \
