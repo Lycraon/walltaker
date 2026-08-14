@@ -9,8 +9,6 @@ services:
       - "${RAILS_HOST_PORT}:3000"
     environment:
       - ENV=PROD
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
       - DATABASE_URL=${DB_URL}
       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
       - REDIS_URL=${REDIS_URL}
@@ -29,21 +27,15 @@ services:
     volumes:
       - ./:/ror
     environment:
-      - POSTGRES_USER=${DB_USER}
       - DATABASE_URL=${DB_URL}
       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
       - REDIS_URL=${REDIS_URL}
-      - RAILS_ENV=production
       - PORNBOT_INTERVAL_SECONDS=600
       - WALLTAKER_BASE_URL=${WALLTAKER_URL}
       - WALLTAKER_HOST=${WALLTAKER_HOST}
       - E621_USER_AGENT=${E621_USER_AGENT}
     networks:
     - backend
-
-volumes:
-  postgres-data:
-  redis-data:
 
 networks:
   backend:
