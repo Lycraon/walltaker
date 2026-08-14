@@ -45,6 +45,9 @@ deploy:
 	make rebuild
 	make run
 
+exec:
+	docker compose $(COMPOSE_OPTIONS) exec $(EXEC_ARGS)
+
 ls:
 	docker compose ls
 	docker image ls
