@@ -1,5 +1,5 @@
 
-BRANCH = Test
+BRANCH = main
 REPO = https://github.com/Lycraon/walltaker.git
 REPO_URL ?= $(REPO)\#$(BRANCH)
 
