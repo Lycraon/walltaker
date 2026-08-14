@@ -1,13 +1,10 @@
-x-database: &database
-  environment:
-    DB_URL: postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+x-database-env: &database
+  DB_URL: postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
 
-x-redis: &redis
-  environment:
+x-redis-env: &redis
     REDIS_URL: redis://${CACHE_HOST}:${CACHE_PORT}/1
 
-x-walltaker: &walltaker  
-  environment:
+x-walltaker-env: &walltaker  
     WALLTAKER_HOST: ${WALLTAKER_HOST?error}
     WALLTAKER_URL: ${WALLTAKER_URL?error}
     E621_USER_AGENT: ${WALLTAKER_HOST} (forked from ailurus and run by ${E621_USER?error})
