@@ -5,7 +5,7 @@ REPO_URL ?= $(REPO)\#$(BRANCH)
 
 #App ----------------------------------------------------------------------------------
 PROFILE_APP =
-FILE_APP = -f docker-compose-app.yaml
+FILE_APP = -f docker-compose-app.yml
 COMPOSE_APP = docker compose $(PROFILE_APP) $(FILE_APP)
 
 
@@ -14,7 +14,7 @@ PROJECT ?= -p walltaker
 
 ENV_FILES ?= --env-file .env.example --env-file walltaker.env
 PROFILES ?= --profile app
-CONFIG_FILE ?= docker-compose-app.yaml
+CONFIG_FILE ?= docker-compose-app.yml
 COMPOSE_OPTIONS ?= $(ENV_FILES) $(PROJECT) -f $(CONFIG_FILE) $(PROFILES) $(COMPOSE_ARGS)
 
 config:
@@ -56,11 +56,7 @@ logs:
 
 #Infrastructure ----------------------------------------------------------------------------------
 PROFILES_INFR = 
-CONFIG_FILE_INFR=docker-compose-infrastructure.yaml
-FILE_INFR = -f docker-compose-infrastructure.yaml
-COMPOSE_INFR = docker compose $(PROFILE_INFR) $(FILE_INFR)
-ENV_COMPOSE_INFR = $(ENV_COMPOSE) $(PROFILE_INFR) $(FILE_INFR)
-
+CONFIG_FILE_INFR=docker-compose-infrastructure.yml
 
 infra-config:
 	make config PROFILES="$(PROFILES_INFR)" CONFIG_FILE="$(CONFIG_FILE_INFR)"
