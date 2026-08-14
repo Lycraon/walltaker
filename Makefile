@@ -4,7 +4,7 @@ REPO = https://github.com/Lycraon/walltaker.git
 REPO_URL ?= $(REPO)\#$(BRANCH)
 
 #App ----------------------------------------------------------------------------------
-PROFILE_APP = 
+PROFILE_APP =
 FILE_APP = -f docker-compose-app.yaml
 COMPOSE_APP = docker compose $(PROFILE_APP) $(FILE_APP)
 

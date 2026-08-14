@@ -1,8 +1,6 @@
 services:
   database:
     image: postgres:14
-    profiles:
-      - infra
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
@@ -22,8 +20,6 @@ services:
 
   redis:
     image: redis:7-alpine
-    profiles:
-      - infra
     restart: unless-stopped
     environment:
       - RI_LOG_LEVEL=info

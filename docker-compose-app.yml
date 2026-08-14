@@ -1,8 +1,6 @@
 services:
   web:
     build: .
-    profiles:
-      - app
     restart: unless-stopped
     command: bash -lc 'ruby -rsocket -e "loop { begin; TCPSocket.new(\"${DB_HOST}\", ${DB_PORT}).close; break; rescue; sleep 1; end }" && bundle exec rails assets:precompile && bundle exec rails db:prepare && bundle exec rails server -e production -b 0.0.0.0'
     volumes:
@@ -25,8 +23,6 @@ services:
 
   pornbot_scheduler:
     build: .
-    profiles:
-      - app
     restart: unless-stopped
     command: bash -lc 'ruby -rsocket -e "loop { begin; TCPSocket.new(\"${DB_HOST}\", ${DB_PORT}).close; break; rescue; sleep 1; end }" && while true; do bundle exec rake walltaker:porn_bot_round; sleep "$${PORNBOT_INTERVAL_SECONDS:-600}"; done'
     volumes:
