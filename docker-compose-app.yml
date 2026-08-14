@@ -1,5 +1,20 @@
+x-database: &database
+  environment:
+    DB_URL: postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+
+x-redis: &redis
+  environment:
+    REDIS_URL: redis://${CACHE_HOST}:${CACHE_PORT}/1
+
+x-walltaker: &walltaker  
+  environment:
+    WALLTAKER_HOST: ${WALLTAKER_HOST?error}
+    WALLTAKER_URL: ${WALLTAKER_URL?error}
+    E621_USER_AGENT: ${WALLTAKER_HOST} (forked from ailurus and run by ${E621_USER?error})
+
 services:
   web:
+    <<: [*database, *redis, *walltaker]
     build: .
     restart: unless-stopped
     command: bash -lc 'ruby -rsocket -e "loop { begin; TCPSocket.new(\"${DB_HOST}\", ${DB_PORT}).close; break; rescue; sleep 1; end }" && bundle exec rails assets:precompile && bundle exec rails db:prepare && bundle exec rails server -e production -b 0.0.0.0'
@@ -9,31 +24,22 @@ services:
       - "${RAILS_HOST_PORT}:3000"
     environment:
       - ENV=PROD
-      - DATABASE_URL=${DB_URL}
       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
-      - REDIS_URL=${REDIS_URL}
       - RAILS_SERVE_STATIC_FILES=true
-      - WALLTAKER_BASE_URL=${WALLTAKER_URL}
-      - WALLTAKER_HOST=${WALLTAKER_HOST}
-      - E621_USER_AGENT=${E621_USER_AGENT}
     networks:
       - backend
       - frontend
 
   pornbot_scheduler:
+    <<: [*database, *redis, *walltaker]
     build: .
     restart: unless-stopped
     command: bash -lc 'ruby -rsocket -e "loop { begin; TCPSocket.new(\"${DB_HOST}\", ${DB_PORT}).close; break; rescue; sleep 1; end }" && while true; do bundle exec rake walltaker:porn_bot_round; sleep "$${PORNBOT_INTERVAL_SECONDS:-600}"; done'
     volumes:
       - ./:/ror
     environment:
-      - DATABASE_URL=${DB_URL}
       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
-      - REDIS_URL=${REDIS_URL}
       - PORNBOT_INTERVAL_SECONDS=600
-      - WALLTAKER_BASE_URL=${WALLTAKER_URL}
-      - WALLTAKER_HOST=${WALLTAKER_HOST}
-      - E621_USER_AGENT=${E621_USER_AGENT}
     networks:
     - backend
 
