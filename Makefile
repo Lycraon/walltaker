@@ -19,7 +19,7 @@ COMPOSE_OPTIONS ?= $(ENV_FILES) $(PROJECT) -f $(CONFIG_FILE) $(PROFILES) $(COMPO
 
 #running script that installs this file lmao
 install:
-	./scripts/install.sh Test
+	./scripts/install.sh $(BRANCH)
 
 config:
 	docker compose $(ENV_FILES) -f $(REPO_URL):$(CONFIG_FILE) $(PROFILES) $(COMPOSE_ARGS) config -o $(CONFIG_FILE)
