@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#curl -fsSL https://raw.githubusercontent.com/Lycraon/walltaker/refs/heads/Main/scripts/install.sh | bash
+#curl -fsSL https://raw.githubusercontent.com/Lycraon/walltaker/refs/heads/main/scripts/install.sh | bash
 
 set -euo pipefail
 
