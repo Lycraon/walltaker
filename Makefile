@@ -17,7 +17,15 @@ COMMIT_HASH = $(shell curl -fsSL \
 	| head -n 1)
 COMMIT_LINK = $(REPO)/commits/$(COMMIT_HASH)
 
+CONFIG_COMMANDS ?= @echo "getting vars..."; \
+export RELEASE_CREATED_AT=$(TODAY); \
+export COMMIT_HASH=$(COMMIT_HASH); \
+export COMMIT_LINK=$(COMMIT_LINK); \
+
+
 debug:
+	@echo "REPO: $(REPO)"
+	@echo "BRANCH: $(BRANCH)"
 	@echo "REPO_URL: $(REPO_URL)"
 	@echo "PROJECT: $(PROJECT)"
 	@echo "ENV_FILES: $(ENV_FILES)"
@@ -35,7 +43,7 @@ install:
 
 config:
 	@echo "creating compose config... From: $(REPO_URL):$(CONFIG_FILE)"
-	docker compose $(ENV_FILES) -f $(REPO_URL):$(CONFIG_FILE) $(PROFILES) $(COMPOSE_ARGS) config -o $(CONFIG_FILE)
+	$(CONFIG_COMMANDS) docker compose $(ENV_FILES) -f $(REPO_URL):$(CONFIG_FILE) $(PROFILES) $(COMPOSE_ARGS) config -o $(CONFIG_FILE)
 
 build:
 	@echo "building docker images..."
@@ -85,10 +93,11 @@ logs:
 
 #Infrastructure ----------------------------------------------------------------------------------
 PROFILES_INFR = 
+CONFIG_COMMANDS_INFR =
 CONFIG_FILE_INFR=docker-compose-infrastructure.yml
 
 infra-config:
-	make config PROFILES="$(PROFILES_INFR)" CONFIG_FILE="$(CONFIG_FILE_INFR)"
+	make config PROFILES="$(PROFILES_INFR)" CONFIG_FILE="$(CONFIG_FILE_INFR)" CONFIG_COMMANDS="$(CONFIG_COMMANDS_INFR)"
 
 infra-build:
 	make build PROFILES="$(PROFILES_INFR)" CONFIG_FILE="$(CONFIG_FILE_INFR)"
