@@ -1,7 +1,7 @@
 
 BRANCH = main
-REPO = https://github.com/Lycraon/walltaker.git
-REPO_URL ?= $(REPO)\#$(BRANCH)
+REPO = https://github.com/Lycraon/walltaker
+REPO_URL ?= $(REPO).git\#$(BRANCH)
 
 PROJECT ?= -p walltaker
 
@@ -10,38 +10,65 @@ PROFILES ?=
 CONFIG_FILE ?= docker-compose-app.yml
 COMPOSE_OPTIONS ?= $(ENV_FILES) $(PROJECT) -f $(CONFIG_FILE) $(PROFILES) $(COMPOSE_ARGS)
 
+TODAY = $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
+COMMIT_HASH = $(shell curl -fsSL \
+	$(REPO)/commits/$(BRANCH) \
+	| grep -oP '(?<=commit/)[0-9a-f]{40}' \
+	| head -n 1)
+COMMIT_LINK = $(REPO)/commits/$(COMMIT_HASH)
+
+debug:
+	@echo "REPO_URL: $(REPO_URL)"
+	@echo "PROJECT: $(PROJECT)"
+	@echo "ENV_FILES: $(ENV_FILES)"
+	@echo "PROFILES: $(PROFILES)"
+	@echo "CONFIG_FILE: $(CONFIG_FILE)"
+	@echo "COMPOSE_OPTIONS: $(COMPOSE_OPTIONS)"
+	@echo "COMPOSE_ARGS: $(COMPOSE_ARGS)"
+	@echo "TODAY: $(TODAY)"
+	@echo "COMMIT_HASH: $(COMMIT_HASH)"
+	@echo "COMMIT_LINK: $(COMMIT_LINK)"
+
 #running script that installs this file lmao
 install:
 	./scripts/install.sh $(BRANCH)
 
 config:
+	@echo "creating compose config... From: $(REPO_URL):$(CONFIG_FILE)"
 	docker compose $(ENV_FILES) -f $(REPO_URL):$(CONFIG_FILE) $(PROFILES) $(COMPOSE_ARGS) config -o $(CONFIG_FILE)
 
 build:
+	@echo "building docker images..."
 	make config
 	docker compose $(COMPOSE_OPTIONS) pull --ignore-buildable
 	docker compose $(COMPOSE_OPTIONS) build $(BUILD_ARGS)
 
 #--d to run in detached mode -> console will not be blocked
 run:
+	@echo "running docker containers..."
 	docker compose $(COMPOSE_OPTIONS) up -d $(RUN_ARGS)
 
 stop:
+	@echo "stopping docker containers..."
 	docker compose $(COMPOSE_OPTIONS) stop $(STOP_ARGS)
 
 # -f to skip confirmation, -s to stop containers before removal
 remove:
+	@echo "removing docker containers..."
 	docker compose $(COMPOSE_OPTIONS) rm $(REMOVE_ARGS) 
 
 restart:
+	@echo "restarting docker containers..."
 	docker compose $(COMPOSE_OPTIONS) restart $(RESTART_ARGS)
 
 rebuild:
+	@echo "rebuilding docker containers..."
 	-make stop || true
 	-make remove REMOVE_ARGS="-s -f" || true
 	make build
 
 deploy:
+	@echo "deploying docker..."
 	make rebuild
 	make run
 
