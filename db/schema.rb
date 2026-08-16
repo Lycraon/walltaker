@@ -248,6 +248,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_121000) do
   create_table "kinks", force: :cascade do |t|
     t.string "name", limit: 30, null: false
     t.boolean "works_on_e621", default: false, null: false
+    t.index ["name"], name: "index_kinks_on_name"
   end
 
   create_table "leashes", force: :cascade do |t|

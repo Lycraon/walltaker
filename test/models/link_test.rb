@@ -1,6 +1,9 @@
 require 'test_helper'
+require 'action_cable/test_helper'
 
 class LinkTest < ActiveSupport::TestCase
+  include ActionCable::TestHelper
+
   test 'expiry date required when not never_expires' do
     link = Link.new
     link.never_expires = false

@@ -1,4 +1,6 @@
 class LinkChannel < ApplicationCable::Channel
+  periodically :refresh_presence, every: 30.seconds
+
   def subscribed
     link_identifier = params[:id].presence || params[:link_id].presence
     return reject unless link_identifier
@@ -29,26 +31,25 @@ class LinkChannel < ApplicationCable::Channel
   end
 
   def check
-    if params[:id].present?
-      link = Link.find(params[:id])
-      if link
-        connection.watched_links.push(link)
-        link.live_client_started_at = Time.now
-        link.save
-      end
-    end
+    link_identifier = params[:id].presence || params[:link_id].presence
+    return unless link_identifier
+
+    link = find_link(link_identifier)
+    watch_link(link) if link
   end
 
   def announce_client(data)
-    if params[:id].present? && data['client']
-      link = Link.find(params[:id])
-      if link
-        begin
-        link.last_ping_user_agent = data['client']
+    link_identifier = params[:id].presence || params[:link_id].presence
+    client_identity = client_identity_from(data)
+    return unless link_identifier && client_identity
+
+    link = find_link(link_identifier)
+    if link
+      begin
+        link.last_ping_user_agent = client_identity
         link.save
-        rescue
-          {success: false, why: 'bad client name'}
-        end
+      rescue
+        { success: false, why: 'bad client name' }
       end
     end
   end
