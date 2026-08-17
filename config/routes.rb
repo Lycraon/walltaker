@@ -30,6 +30,7 @@ Rails.application.routes.draw do
   get 'help', to: 'help#index', as: 'help'
   get 'help/faq', to: 'help#faq', as: 'faq'
   get 'help/client_guide', to: 'help#client_guide', as: 'client_guide'
+  get 'help/deprecated_client_guide', to: 'help#deprecated_client_guide', as: 'deprecated_client_guide'
   get 'leaderboard', to: 'leaderboard#index', as: 'leaderboard'
   get 'notifications/:id', to: 'notification#show', as: 'notification'
   delete 'notifications', to: 'notification#delete_all', as: 'clear_notifications'
@@ -73,7 +74,9 @@ Rails.application.routes.draw do
   resources :users do
     resources :reports, only: %i[new create]
     resources :leashes, only: %i[index]
-    resource :nut_pledge
+    resource :nut_pledge do
+      get :history
+    end
     post 'profile', to: 'profiles#set_profile', as: 'set_profile'
 
     member do
@@ -140,6 +143,7 @@ Rails.application.routes.draw do
 
   scope path: :mod_tools, as: 'mod_tools' do
     get '/', to: 'mod_tools#index', as: 'index'
+    post 'global_toggles/nut_tracker', to: 'mod_tools#toggle_nut_tracker', as: 'toggle_nut_tracker'
 
     resources :reports, except: %i[new create]
 
