@@ -16,7 +16,8 @@ services:
       timeout: 5s
       retries: 10
     networks:
-      - backend
+      - walltaker
+      - monitoring
 
   redis:
     image: redis:7-alpine
@@ -36,13 +37,17 @@ services:
       retries: 5
       start_period: 30s
     networks:
-      - backend
+      - walltaker
+      - monitoring
 
 volumes:
   postgres-data:
   redis-data:
 
 networks:
-  backend:
-  frontend:
+  walltaker:
+    name: "walltaker"
+    internal: true
+  monitoring:
+    external: true
 

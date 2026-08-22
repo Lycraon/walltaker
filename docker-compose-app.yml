@@ -43,8 +43,8 @@ services:
       <<: [*database, *redis, *walltaker]
       RAILS_SERVE_STATIC_FILES: true
     networks:
-      - backend
-      - frontend
+      - walltaker
+      - proxy
 
   pornbot_scheduler:
     build: .
@@ -70,9 +70,11 @@ services:
       <<: [*database, *redis, *walltaker]
       PORNBOT_INTERVAL_SECONDS: ${PORNBOT_INTERVAL_SECONDS:-600}
     networks:
-    - backend
+    - walltaker
 
 networks:
-  backend:
-  frontend:
-
+  walltaker:
+    internal: true
+    external: true    
+  proxy:
+    external: true
