@@ -2,14 +2,24 @@
 ARG RUBY_VERSION=3.3.4
 FROM ruby:$RUBY_VERSION
 
+ENV APP_DIR=/ror
+
 # Prepare working directory.
-WORKDIR /ror
-COPY ./ /ror
+WORKDIR ${APP_DIR}
+
+# Copy gemfiles first, so they are cached for build
+COPY Gemfile Gemfile.lock ${APP_DIR}
 
 # Exec on image build
-RUN gem install bundler
-RUN bundle install
-RUN bundle exec rails assets:precompile
+RUN <<EOF
+    set -e
+    gem install bundler
+    bundle install
+    bundle exec rails assets:precompile
+EOF
+
+#copy the rest of the files that don't need bu
+COPY ./ ${APP_DIR}
 
 # Exec on container start
 #ENTRYPOINT ["./ror/bin/setup"]
