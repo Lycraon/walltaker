@@ -1,5 +1,12 @@
 services:
   database:
+    env_file:
+      - .env.example
+      - .env
+      - path: ./infra.env
+        required: false
+      - path: ./database.env
+        required: false
     image: postgres:14
     restart: unless-stopped
     volumes:
@@ -20,6 +27,14 @@ services:
       - monitoring
 
   redis:
+    env_file:
+      - .env.example
+      - path: ./.env
+        required: false
+      - path: ./infra.env
+        required: false
+      - path: ./redis.env
+        required: false
     image: redis:7-alpine
     restart: unless-stopped
     environment:
