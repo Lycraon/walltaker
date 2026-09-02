@@ -9,12 +9,13 @@ class EnsurePornBotProfile < ActiveRecord::Migration[7.2]
       admin: true
     )
     if pornbot.new_record?
-      pornbot.password = 'youcantloginaspornbotdoofus'
-      pornbot.password_confirmation = 'youcantloginaspornbotdoofus'
+      pornbot.password_digest = BCrypt::Password.create(SecureRandom.base64(48))
     end
     pornbot.save!
 
-    profile = pornbot.profiles.find_or_initialize_by(name: 'Imported')
+    # Profile's default scope relies on users.deleted_at, which is introduced
+    # by a later migration. Keep this data migration independent of app scopes.
+    profile = Profile.unscoped.find_or_initialize_by(user_id: pornbot.id, name: 'Imported')
     profile.content = PORN_BOT_PROFILE
     profile.save!
     pornbot.update!(profile:)

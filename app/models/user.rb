@@ -20,6 +20,7 @@ class User < ApplicationRecord
   has_many :messages, through: :message_threads
   has_many :reports, as: :reportable
   has_many :profiles, inverse_of: :user
+  has_one :user_icon, dependent: :destroy
   has_many :friendships, ->(user) { unscope(:where).where(receiver_id: user.id).or(where(sender_id: user.id)) }
   has_many :held_leashes, ->(user) { where(master: user) }, through: :friendships, source: :leashes
   has_many :obeying_leashes, ->(user) { where(pet: user) }, through: :friendships, source: :leashes
@@ -37,7 +38,7 @@ class User < ApplicationRecord
   validates_uniqueness_of :email, :case_sensitive => false
   validates :password, confirmation: true
   validates :username, presence: true, format: { with: /\A[a-zA-Z0-9]+\Z/ }
-  validate :evil_account_credentials_are_immutable, on: :update
+  validate :system_account_credentials_are_immutable, on: :update
   validate :username_change_cooldown_has_elapsed, on: :update
 
   before_update :record_username_change, if: :will_save_change_to_username?
@@ -64,13 +65,17 @@ class User < ApplicationRecord
     username == 'evil' || username_in_database == 'evil'
   end
 
+  def system_account?
+    evil_account? || (has_attribute?(:system_account) && self[:system_account])
+  end
+
   def deleted?
     deleted_at.present?
   end
 
   def soft_delete!
     with_lock do
-      raise ActiveRecord::RecordNotDestroyed, 'The evil account cannot be deleted.' if evil_account?
+      raise ActiveRecord::RecordNotDestroyed, 'System accounts cannot be deleted.' if system_account?
       return true if deleted?
 
       original_username = username
@@ -98,7 +103,7 @@ class User < ApplicationRecord
 
   def purge!
     raise ActiveRecord::RecordNotDestroyed, 'Only deleted accounts can be purged.' unless deleted?
-    raise ActiveRecord::RecordNotDestroyed, 'The evil account cannot be purged.' if evil_account?
+    raise ActiveRecord::RecordNotDestroyed, 'System accounts cannot be purged.' if system_account?
 
     transaction do
       user_id = id
@@ -140,6 +145,14 @@ class User < ApplicationRecord
 
   def can_change_username?(at: Time.current)
     username_changed_at.nil? || username_changed_at <= at - USERNAME_CHANGE_COOLDOWN
+  end
+
+  def update_bypassing_username_change_cooldown(attributes)
+    previous_bypass = @bypass_username_change_cooldown
+    @bypass_username_change_cooldown = true
+    update(attributes)
+  ensure
+    @bypass_username_change_cooldown = previous_bypass
   end
 
   def next_username_change_at
@@ -297,15 +310,18 @@ class User < ApplicationRecord
 
   private
 
-  def evil_account_credentials_are_immutable
-    return unless username_in_database == 'evil'
+  def system_account_credentials_are_immutable
+    flagged_system_account = has_attribute?(:system_account) && system_account_in_database
+    return unless flagged_system_account || evil_account?
 
-    errors.add(:username, 'cannot be changed for the evil account') if will_save_change_to_username?
-    errors.add(:password, 'cannot be changed for the evil account') if will_save_change_to_password_digest?
+    errors.add(:username, 'cannot be changed for a system account') if will_save_change_to_username?
+    errors.add(:password, 'cannot be changed for a system account') if will_save_change_to_password_digest?
+    errors.add(:system_account, 'cannot be disabled') if will_save_change_to_system_account?
   end
 
   def username_change_cooldown_has_elapsed
     return unless will_save_change_to_username?
+    return if @bypass_username_change_cooldown
     return if can_change_username?
 
     errors.add(:username, 'can only be changed once a week')

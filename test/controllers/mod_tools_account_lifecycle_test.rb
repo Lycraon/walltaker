@@ -64,6 +64,97 @@ class ModToolsAccountLifecycleTest < ActionDispatch::IntegrationTest
     assert_not EmojiLinkDecoration.exists?(decoration.id)
   end
 
+  test "moderator can manage user icons from Misc Fun" do
+    icon_user = create_user(username: 'IconUser', email: 'icon-user@example.com')
+
+    get mod_tools_index_path
+
+    assert_select 'h3', text: 'Misc. Fun'
+    assert_select "form[action='#{mod_tools_user_icons_path}'] button.secondary", text: 'User Icons'
+
+    get mod_tools_user_icons_path
+    assert_response :success
+    assert_select 'h2', text: /User Icons/
+    assert_select 'form .form__row', count: 2
+
+    post mod_tools_user_icons_path, params: { user_icon: { username: icon_user.username, icon_name: 'rocket-outline' } }
+    user_icon = UserIcon.find_by!(user: icon_user)
+    assert_redirected_to mod_tools_user_icons_path
+    assert_equal 'rocket-outline', user_icon.icon_name
+
+    get user_path(icon_user.username)
+    assert_response :success
+    assert_select "ion-icon[name='rocket-outline'].big", count: 1
+
+    patch mod_tools_user_icon_path(user_icon), params: { user_icon: { icon_name: 'planet-outline' } }
+    assert_redirected_to mod_tools_user_icons_path
+    assert_equal 'planet-outline', user_icon.reload.icon_name
+
+    delete mod_tools_user_icon_path(user_icon)
+    assert_redirected_to mod_tools_user_icons_path
+    assert_not UserIcon.exists?(user_icon.id)
+  end
+
+  test "moderator can manage homepage and recognized clients from Misc Fun" do
+    get mod_tools_index_path
+
+    assert_select "form[action='#{mod_tools_wallpaper_clients_path}'] button.secondary", text: 'Clients'
+
+    get mod_tools_wallpaper_clients_path
+    assert_response :success
+    assert_select 'h2', text: /Clients/
+
+    client_params = {
+      name: 'Test Mobile Client',
+      section: 'clients',
+      url: 'https://example.com/client',
+      platform: 'TestOS',
+      match_text: 'TestClient/',
+      link_name: 'Test Client',
+      icon_name: 'rocket-outline',
+      device_type: 'mobile',
+      deprecated: false
+    }
+    post mod_tools_wallpaper_clients_path, params: { wallpaper_client: client_params }
+    client = WallpaperClient.find_by!(name: 'Test Mobile Client')
+    assert_redirected_to mod_tools_wallpaper_clients_path
+
+    get root_path
+    assert_response :success
+    assert_select "a[href='https://example.com/client']", text: 'Test Mobile Client'
+
+    assert_equal client, WallpaperClient.for_user_agent('Example TestClient/1.0')
+    links_helper = Object.new.extend(LinksHelper)
+    assert_equal client, links_helper.client_for_user_agent('Example TestClient/1.0')
+
+    link_owner = create_user(username: 'ClientOwner', email: 'client-owner@example.com')
+    link_owner.link.create!(never_expires: true, friends_only: false, min_score: 0, last_ping_user_agent: 'Example TestClient/1.0')
+    get user_path(link_owner.username)
+    assert_response :success
+    assert_select '.link--device-in-use span', text: 'Test Client'
+    assert_select ".link--device-in-use ion-icon[name='rocket-outline']"
+
+    second_client = WallpaperClient.create!(name: 'Second Client', section: 'hidden')
+    post mod_tools_wallpaper_client_move_up_path(second_client)
+    assert_redirected_to mod_tools_wallpaper_clients_path(anchor: dom_id(second_client))
+    assert_equal second_client, WallpaperClient.ordered.first
+
+    post mod_tools_wallpaper_client_move_down_path(second_client)
+    assert_redirected_to mod_tools_wallpaper_clients_path(anchor: dom_id(second_client))
+    assert_equal client, WallpaperClient.ordered.first
+
+    patch mod_tools_wallpaper_client_path(client), params: {
+      wallpaper_client: client_params.merge(section: 'companion_apps', link_name: 'Renamed Client')
+    }
+    assert_redirected_to mod_tools_wallpaper_clients_path
+    assert_equal 'companion_apps', client.reload.section
+    assert_equal 'Renamed Client', client.link_label
+
+    delete mod_tools_wallpaper_client_path(client)
+    assert_redirected_to mod_tools_wallpaper_clients_path
+    assert_not WallpaperClient.exists?(client.id)
+  end
+
   test "moderator can open separate System and Activity analytics pages" do
     get mod_tools_index_path
 
@@ -115,6 +206,23 @@ class ModToolsAccountLifecycleTest < ActionDispatch::IntegrationTest
     assert_select ".mod_tool__result--success", text: /#{user.username}/
   end
 
+  test "moderator can rename a user during the username cooldown" do
+    user = create_user(username: "CooldownRename", email: "mod-rename@example.com")
+    user.update_column(:username_changed_at, 1.day.ago)
+
+    post mod_tools_users_update_path, params: {
+      user: {
+        id: user.id,
+        username: "ModeratorRenamed",
+        email: user.email
+      }
+    }
+
+    assert_response :success
+    assert_equal "ModeratorRenamed", user.reload.username
+    assert_in_delta Time.current, user.username_changed_at, 1.second
+  end
+
   test "deleted account queue lists every deleted account and provides actions" do
     first_user = create_user(username: "FirstDeleted", email: "first-deleted@example.com")
     second_user = create_user(username: "SecondDeleted", email: "second-deleted@example.com")
@@ -137,6 +245,20 @@ class ModToolsAccountLifecycleTest < ActionDispatch::IntegrationTest
     assert_redirected_to mod_tools_users_deleted_path
   end
 
+  test "quarantine actions only redirect to local return paths" do
+    user = create_user(username: "QuarantineTarget", email: "quarantine-target@example.com")
+    fallback_path = mod_tools_quarantine_index_path(anchor: dom_id(user))
+
+    post mod_tools_quarantine_update_path(user), params: { return_to: "https://attacker.example/phishing" }
+    assert_redirected_to fallback_path
+
+    post mod_tools_quarantine_update_path(user), params: { return_to: mod_tools_reports_path }
+    assert_redirected_to mod_tools_reports_path
+
+    post mod_tools_quarantine_ipban_path(user), params: { return_to: "//attacker.example/phishing" }
+    assert_redirected_to fallback_path
+  end
+
   test "moderator can permanently purge a deleted account" do
     user = create_user(username: "PurgeMe", email: "purge-me@example.com")
     profile = user.profiles.create!(content: "Purge this profile")
@@ -152,13 +274,28 @@ class ModToolsAccountLifecycleTest < ActionDispatch::IntegrationTest
     assert_not Profile.unscoped.exists?(profile.id)
   end
 
+  test "moderator can assume a system account" do
+    system_user = create_user(
+      username: "ModeratorOnlyRobot",
+      email: "moderator-only-robot@example.com",
+      system_account: true
+    )
+
+    get mod_tools_users_assume_path(system_user)
+
+    assert_redirected_to root_path
+    follow_redirect!
+    assert_select ".user-tools .username", text: system_user.username
+  end
+
   private
 
-  def create_user(username:, email:, admin: false)
+  def create_user(username:, email:, admin: false, system_account: false)
     User.create!(
       username:,
       email:,
       admin:,
+      system_account:,
       password: "password",
       password_confirmation: "password"
     )

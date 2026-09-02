@@ -11,6 +11,7 @@ class ApplicationController < ActionController::Base
   helper_method :get_search_base
   helper_method :get_post
 
+  before_action :disallow_evil_during_invite_only
   before_action :broadcast_flash_message
 
   def e621_module
@@ -30,6 +31,15 @@ class ApplicationController < ActionController::Base
   end
 
   private
+
+  def disallow_evil_during_invite_only
+    return unless SiteConfig.invite_only? && current_user&.evil_account?
+
+    session[:user_id] = nil
+    cookies.delete :permanent_session_id
+    @current_user = nil
+    redirect_to login_path, alert: 'The evil account is unavailable while invite-only mode is enabled.'
+  end
 
   # @param [Symbol<:regular, :nefarious, :visit>] level
   # @param [Symbol, String] id
@@ -124,13 +134,23 @@ class ApplicationController < ActionController::Base
   end
 
   def surrender_controller
-    return nil unless helpers.is_surrender_controller_session?
-    begin
-      Surrender.find(cookies.signed[:surrender_id])&.controller
-    rescue
-      nil
-    end
+    current_surrender_session&.controller
   end
+
+  helper_method :surrender_controller
+
+  def current_surrender_session
+    return nil unless helpers.is_surrender_controller_session?
+
+    surrender = Surrender.find_by(id: cookies.signed[:surrender_id])
+    return nil unless surrender&.active?
+    return nil unless surrender.logged_in?
+    return nil unless surrender.user_id == current_user&.id
+
+    surrender
+  end
+
+  helper_method :current_surrender_session
 
   # @param [User] user
   # @param [Surrender] surrender
