@@ -18,6 +18,14 @@ x-walltaker-env: &walltaker
 
 services:
   web:
+    env_file:
+      - .env.example
+      - path: ./.env
+        required: false
+      - path: ./walltaker.env
+        required: false
+      - path: ./web.env
+        required: false
     build: .
     restart: unless-stopped
     command: > 
@@ -39,6 +47,10 @@ services:
       - ./:/ror
     ports:
       - "${RAILS_HOST_PORT:-3000}:3000"
+    labels:
+      - org.opencontainers.image.source="${COMMIT_LINK:-}"
+      - org.opencontainers.image.revision="${COMMIT_HASH:-}"
+      - org.opencontainers.image.created="${BUILD_AT:-}"
     environment:
       <<: [*database, *redis, *walltaker]
       RAILS_SERVE_STATIC_FILES: true
@@ -47,6 +59,14 @@ services:
       - proxy
 
   pornbot_scheduler:
+    env_file:
+      - .env.example
+      - path: ./.env
+        required: false
+      - path: ./walltaker.env
+        required: false
+      - path: ./scheduler.env
+        required: false
     build: .
     restart: unless-stopped
     command: >
@@ -66,6 +86,10 @@ services:
       '
     volumes:
       - ./:/ror
+    labels:
+      - org.opencontainers.image.source="${COMMIT_LINK:-}"
+      - org.opencontainers.image.revision="${COMMIT_HASH:-}"
+      - org.opencontainers.image.created="${BUILD_AT:-}"
     environment:
       <<: [*database, *redis, *walltaker]
       PORNBOT_INTERVAL_SECONDS: ${PORNBOT_INTERVAL_SECONDS:-600}

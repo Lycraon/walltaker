@@ -1,17 +1,15 @@
 # See https://docs.docker.com/engine/reference/builder/#dockerignore-file for more about ignoring files.
 
-
-/scripts/*
-
 # Ignore git directory.
 /.git/
 /.gitignore
+/.gitattributes
 
 # Ignore bundler config.
 /.bundle
 
 # Ignore all environment files.
-/.env*
+*.env*
 
 # Ignore all default key files.
 /config/master.key
@@ -48,3 +46,12 @@
 # Ignore Docker-related files
 /.dockerignore
 /Dockerfile*
+
+makefile
+Procfile
+/README.md
+/*.md
+
+/.idea
+/test
+/scripts
