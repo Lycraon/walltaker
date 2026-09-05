@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
-      - ${DB_HOST_PORT}:${DB_PORT}
+      - ${DB_HOST_PORT:-127.0.0.1:5432}:${DB_PORT:-5432}
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_DB=${DB_NAME}
@@ -44,7 +44,7 @@ services:
     volumes:
       - redis-data:/data
     ports:
-      - ${CACHE_HOST_PORT}:${CACHE_PORT}
+      - ${CACHE_HOST_PORT:-127.0.0.1:6379}:${CACHE_PORT:-6379}
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 1m30s
