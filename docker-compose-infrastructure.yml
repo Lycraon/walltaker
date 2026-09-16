@@ -1,5 +1,6 @@
 services:
   database:
+    shm_size: ${POSTGRES_SHM_SIZE:-256mb}
     env_file:
       - .env.example
       - .env
@@ -11,6 +12,7 @@ services:
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
     ports:
       - ${DB_HOST_PORT:-127.0.0.1:5432}:${DB_PORT:-5432}
     environment:
@@ -24,6 +26,7 @@ services:
       retries: 10
     networks:
       - walltaker
+      - database-backup
       - monitoring
 
   redis:
@@ -65,4 +68,7 @@ networks:
     internal: true
   monitoring:
     external: true
+  database-backup:
+    external: true
 
+#mkdir -p /var/lib/postgresql/data/backups/$(date +%F);pg_dump -U postgres Walltaker -F c | gzip > /var/lib/postgresql/data/backups/$(date +%F)/backup.dump
