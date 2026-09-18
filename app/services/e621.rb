@@ -35,10 +35,9 @@ class E621
       url = "#{url}&page=a#{before_id}" if before_id
       url = "#{url}&limit=#{limit}"
       response = Excon.get(url, headers: { 
-        'Referer': SiteConfig.base_url,
         'User-Agent': SiteConfig.e621_user_agent 
       })
-      
+
       if response.status != 200
         track :error, :e621_posts_api_fail, response: response
         return nil
