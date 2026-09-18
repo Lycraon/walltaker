@@ -18,7 +18,6 @@ module MessageThreadHelper
         response = Excon.get(
           "https://e621.net/posts/#{post_id.to_i}.json",
           headers: { 
-            'Referer': SiteConfig.base_url,
             'User-Agent': SiteConfig.e621_user_agent 
           }
         )
