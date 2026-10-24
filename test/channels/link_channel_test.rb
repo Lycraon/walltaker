@@ -28,14 +28,29 @@ class LinkChannelTest < ActionCable::Channel::TestCase
     assert_equal true, payload[:online]
   end
 
-  test 'refreshing presence does not update live_client_started_at heartbeat' do
+  test 'explicit presence checks do not update live_client_started_at' do
     subscribe id: @link.id
     started_at = @link.reload.live_client_started_at
 
     travel 45.seconds
-    subscription.send(:refresh_presence)
+    perform :check
 
     assert_equal started_at.to_i, @link.reload.live_client_started_at.to_i
+  ensure
+    travel_back
+  end
+
+  test 'server heartbeats renew connection leases without changing the historical start time' do
+    stub_connection current_user: nil, client_identity: 'presence-test'
+    connection.singleton_class.attr_accessor :watched_links
+    connection.watched_links = {}
+    subscribe id: @link.id
+    started_at = @link.reload.live_client_started_at
+    travel 4.minutes
+    perform :heartbeat
+    travel 2.minutes
+    assert @link.reload.is_online?
+    assert_equal started_at.to_i, @link.live_client_started_at.to_i
   ensure
     travel_back
   end
@@ -82,7 +97,14 @@ class LinkChannelTest < ActionCable::Channel::TestCase
     assert_equal true, payload[:watching]
     assert_equal @link.user.username, payload[:user][:username]
     assert_equal false, payload[:user][:authenticated]
-    assert_has_stream "User::#{@link.user.username}"
+    assert_has_stream User.api_stream_name(@link.user.username, :anonymous)
+
+    @link.user.update!(set_count: 123)
+
+    update_payload = transmissions.last
+    assert_equal 'user', update_payload['type']
+    assert_equal 123, update_payload.dig('user', 'set_count')
+    assert_equal false, update_payload.dig('user', 'authenticated')
   end
 
   test 'watch_user can switch to another user' do
@@ -93,8 +115,8 @@ class LinkChannelTest < ActionCable::Channel::TestCase
     perform :watch_user, username: @link.user.username
     perform :watch_user, username: other_user.username
 
-    assert_no_stream "User::#{@link.user.username}"
-    assert_has_stream "User::#{other_user.username}"
+    assert_no_stream User.api_stream_name(@link.user.username, :anonymous)
+    assert_has_stream User.api_stream_name(other_user.username, :anonymous)
     assert_equal other_user.username, transmissions.last[:user][:username]
   end
 
