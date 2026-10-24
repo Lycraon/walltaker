@@ -13,15 +13,24 @@ COPY ./nuttracker ${APP_DIR}/nuttracker/
 
 # Install the exact Bundler version used by the application, then install gems.
 # Separate RUN instructions also work with Docker's classic builder.
-RUN ruby --version
-RUN gem install bundler -v 2.4.13
-RUN bundle _2.4.13_ install --jobs 1
+RUN <<EOF
+    set -e
+    echo "== versions == "
+    ruby --version
+    gem --version
+    echo "== install bundler == "
+    gem install bundler -v 2.4.13
+    
+    bundle _2.4.13_ --version
+    echo "== install gems == "
+    bundle _2.4.13_ install --jobs 1
+EOF
 
 # Copy the application after dependencies so Gemfile changes are the only
 # application edits that invalidate the expensive bundle layer.
 COPY ./ ${APP_DIR}
 
-RUN SECRET_KEY_BASE_DUMMY=1 bundle exec rails app:assets:precompile
+RUN SECRET_KEY_BASE_DUMMY=1 bundle exec rails assets:precompile
 
 # Exec on container start
 #ENTRYPOINT ["./ror/bin/setup"]
