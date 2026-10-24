@@ -30,7 +30,7 @@ EOF
 # application edits that invalidate the expensive bundle layer.
 COPY ./ ${APP_DIR}
 
-RUN SECRET_KEY_BASE_DUMMY=1 bundle exec rails app:assets:precompile
+RUN SECRET_KEY_BASE_DUMMY=1 bundle exec rails assets:precompile
 
 # Exec on container start
 #ENTRYPOINT ["./ror/bin/setup"]
