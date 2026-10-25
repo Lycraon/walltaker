@@ -3,6 +3,7 @@
 <% content_for :og_description do %>
   <%= [
     ("Send #{link.user.username} some nice wallpapers!"),
+    "\n",
     ("theme: #{link.theme}" if link.theme.present?),
     ("score > #{link.min_score}" if link.min_score.present? && link.min_score > 0),
     "\n",
