@@ -124,6 +124,7 @@ services:
       - web
     networks:
       - walltaker
+      - proxy
 
 networks:
   walltaker:

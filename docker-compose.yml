@@ -114,6 +114,7 @@ services:
       ANYCABLE_PONG_TIMEOUT: "60"
     networks:
       - backend
+      - frontend
 
 volumes:
   postgres-data-v2:
